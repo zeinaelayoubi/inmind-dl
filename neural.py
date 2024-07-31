@@ -46,7 +46,7 @@ tinymodel = TinyModel()
 
 
 input_tensor = torch.randn(1, 4)  
-#(batch , inputs)
+# this is (batch , inputs)
 
 output = tinymodel(input_tensor)
 
