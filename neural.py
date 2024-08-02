@@ -8,6 +8,8 @@ class TinyModel(torch.nn.Module):
     def __init__(self):
         super(TinyModel, self).__init__()
 
+        
+        #self.linear creates a fullly connected layer 
         self.linear1 = torch.nn.Linear(4, 6)
         self.activation1 = torch.nn.LeakyReLU()
         #allows a small, non-zero gradient when the unit is inactive and not in the positive range.
@@ -38,8 +40,8 @@ class TinyModel(torch.nn.Module):
         x = self.activation3(x)
         x = self.linear4(x)
         x = self.activation4(x)        
-        x = self.linear4(x)
-        x = self.activation4(x)
+        x = self.linear5(x)
+        x = self.activation5(x)
         return x
 
 tinymodel = TinyModel()

@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchsummary import summary
 
+#leNet5 CNN implementation
 class LeNet5(nn.Module):
     def __init__(self):
         super(LeNet5, self).__init__()
@@ -17,7 +18,9 @@ class LeNet5(nn.Module):
         self.fc2 = nn.Linear(in_features=84, out_features=10)
         
     def forward(self, x):
-        
+#       Convolutional Layer: Applies filters (kernels) to the input data to extract features.
+#       Activation Function: Introduces non-linearity to the model, allowing it to learn complex patterns.
+#       Average Pooling: Reduces the spatial dimensions (height and width) of the feature maps, helping to make the model more computationally efficient and robust to spatial variations.
         x = self.conv1(x)
         x = torch.tanh(x)
         x = F.avg_pool2d(x, kernel_size=2, stride=2)
@@ -31,7 +34,7 @@ class LeNet5(nn.Module):
         x = self.conv3(x)
         x = torch.tanh(x)
         
-        #flatten
+        #flatten out to the shape of (btch size, 120)
         x = x.view(-1, 120)
         
         x = self.fc1(x)
@@ -39,7 +42,7 @@ class LeNet5(nn.Module):
         
        
         x = self.fc2(x)
-        x = F.softmax(x, dim=1)
+        x = F.softmax(x, dim=1)#usually always dim=1
         
         return x
 
