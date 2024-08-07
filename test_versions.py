@@ -14,3 +14,6 @@ print("albumentations Version", albumentations.__version__)
 
 import open3d as o3d
 print("Open3D version:", o3d.__version__)
+
+import torchvision
+print("torch vision",torchvision.__version__)
