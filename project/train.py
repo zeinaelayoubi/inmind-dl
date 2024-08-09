@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from dataset import CustomImageDataset
 from model import UNET
 from utils import save_checkpoint, load_checkpoint, get_loaders, check_accuracy, save_predictions_as_imgs
-
+import tqdm 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
