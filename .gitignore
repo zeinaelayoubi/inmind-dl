@@ -4,5 +4,6 @@ data/100examples.csv
 data/test.csv 
 project/train/
 project/train_masks/
-
+project/train_val/
+project/train_masks_val/
 
