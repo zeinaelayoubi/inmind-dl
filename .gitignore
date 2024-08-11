@@ -2,8 +2,8 @@ data/images/
 data/labels/
 data/100examples.csv
 data/test.csv 
-project/train/
-project/train_masks/
-project/train_val/
-project/train_masks_val/
+Unet/train/
+Unet/train_masks/
+Unet/train_val/
+Unet/train_masks_val/
 
