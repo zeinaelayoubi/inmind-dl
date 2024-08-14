@@ -6,4 +6,34 @@ Unet/train/
 Unet/train_masks/
 Unet/train_val/
 Unet/train_masks_val/
+project/dataset/
 
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+.env/
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.cache
+
+# Data and models
+data/
+weights/
+
+# Checkpoints and outputs
+checkpoints/
+output/
+
+# Configuration files
+config.yaml
+
+# IDE and editor specific files
+.vscode/
+.idea/
