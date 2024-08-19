@@ -3,61 +3,10 @@ import torch
 import numpy as np
 from PIL import Image
 from torch.utils.data import DataLoader
-from dataset import SegmentationDataset
+from dataset import SegmentationDataset, COLOR_MAP
 import matplotlib.pyplot as plt
 from torchvision import transforms
 
-
-# Define the color map for visualization
-COLOR_MAP = {
-    0: (0, 0, 0, 0),          # BACKGROUND
-    1: (25, 255, 82, 255),    # iwhub
-    2: (25, 82, 255, 255),    # dolly
-    3: (255, 25, 197, 255),   # pallet
-    4: (140, 25, 255, 255),   # crate
-    5: (140, 255, 25, 255),   # rack
-    6: (255, 111, 25, 255),   # railing
-    7: (0, 0, 0, 255),        # UNLABELLED
-    8: (226, 255, 25, 255),   # floor
-    9: (255, 197, 25, 255),   # forklift
-    10: (54, 255, 25, 255)    # stillage
-}
-
-DEBUG = False  # Set to True to enable visualization
-
-def pad_image(image, target_size):
-    """ Pad the image to the target size. """
-    orig_width, orig_height = image.size
-    aspect_ratio = orig_width / orig_height
-    
-    if orig_width > orig_height:
-        new_width = target_size[0]
-        new_height = int(target_size[0] / aspect_ratio)
-    else:
-        new_height = target_size[1]
-        new_width = int(target_size[1] * aspect_ratio)
-    
-    image_resized = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
-    
-    new_image = Image.new('RGB', target_size, (0, 0, 0))  # Black padding
-    paste_x = (target_size[0] - new_width) // 2
-    paste_y = (target_size[1] - new_height) // 2
-    new_image.paste(image_resized, (paste_x, paste_y))
-    
-    return new_image
-
-def pad_image_and_mask(image, mask, target_size):
-    """ Pad both image and mask to the target size. """
-    padded_image = pad_image(image, target_size)
-    padded_mask = pad_image(mask.convert('L'), target_size)  # Convert mask to grayscale for padding
-    return padded_image, padded_mask
-
-# Define the transform pipeline
-def get_transform(target_size):
-    return transforms.Compose([
-        transforms.Lambda(lambda img: pad_image(img, target_size)),  # Apply padding
-        transforms.ToTensor()
-    ])
 
 def get_loaders(
     train_image_dir,
@@ -135,24 +84,52 @@ def check_accuracy(loader, model, device='cuda'):
     accuracy = num_correct / num_samples
     print(f'Accuracy: {accuracy:.4f}') 
     
-def visualize_image_and_mask(image, mask, title=''):
+def visualize_image_and_mask(dataset, index, title=''):
     """
-    Visualize image and mask side-by-side for debugging purposes.
+    Visualize image and mask from the dataset at a specific index side-by-side for debugging purposes.
     """
-    image = image.permute(1, 2, 0).cpu().numpy()
-    mask = mask.squeeze(0).cpu().numpy()
-    
-    plt.figure(figsize=(12, 6))
-    plt.subplot(1, 2, 1)
-    plt.title(f'{title} - Image')
-    plt.imshow(image)
-    plt.axis('off')
-    
-    plt.subplot(1, 2, 2)
-    plt.title(f'{title} - Mask')
-    plt.imshow(mask, cmap='jet')
-    plt.axis('off')
-    
+    if index >= len(dataset):
+        print("Index is out of range.")
+        return
+
+    # Get sample from dataset
+    sample = dataset[index]
+    image = sample['image']
+    mask = sample['mask']
+
+    # Convert tensors to PIL Images for visualization
+    image_pil = transforms.ToPILImage()(image.cpu())
+    mask_pil = transforms.ToPILImage()(mask.cpu().to(dtype=torch.uint8))  # Convert mask to uint8
+
+    # Convert mask to a numpy array for visualization
+    mask_np = np.array(mask_pil)
+
+    # Print mask information
+    print(f"Mask unique values: {np.unique(mask_np)}")
+
+    mask_image = Image.open(os.path.join(dataset.mask_dir, dataset.mask_files[index]))
+    mask_array = np.array(mask_image)
+        #print("mask array",mask_array)
+        # Print unique RGBA values
+    unique_rgba = np.unique(mask_array.reshape(-1, mask_array.shape[2]), axis=0)
+    print("Unique RGBA values in mask image:")
+    for rgba in unique_rgba:
+        print(rgba)
+    fig, axes = plt.subplots(1, 2, figsize=(18, 7))  # Added an extra subplot for direct mask view
+    axes[0].imshow(image_pil)
+    axes[0].set_title('Image')
+    axes[0].axis('off')
+        
+        
+    axes[1].imshow(mask_array)  # Directly show the original mask with RGBA
+    axes[1].set_title('Original Mask')
+    axes[1].axis('off')
+        
+        # Set aspect ratio to 'equal' to avoid squeezing
+    for ax in axes:
+        ax.set_aspect('equal')
+
+    plt.tight_layout()
     plt.show()
 
 def colorize_segmentation(segmentation, color_map):
@@ -200,4 +177,3 @@ def save_predictions_as_imgs(loader, model, folder='saved_images', device='cuda'
                     output_img.save(os.path.join(folder, f'pred_{filename}'))
                 else:
                     raise ValueError(f"Unexpected output image shape: {output.shape}")
-

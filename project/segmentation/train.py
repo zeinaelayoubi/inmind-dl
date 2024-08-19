@@ -3,31 +3,14 @@ import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from model import HRNetV2Inspired
+from model import SimpleSegNet
 from utils import get_loaders, save_checkpoint, load_checkpoint, check_accuracy, save_predictions_as_imgs, visualize_image_and_mask
 from torch.cuda.amp import GradScaler, autocast
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from PIL import Image
 
-# Define the color map for visualization
-COLOR_MAP = {
-    0: (0, 0, 0, 0),          # BACKGROUND
-    1: (25, 255, 82, 255),    # iwhub
-    2: (25, 82, 255, 255),    # dolly
-    3: (255, 25, 197, 255),   # pallet
-    4: (140, 25, 255, 255),   # crate
-    5: (140, 255, 25, 255),   # rack
-    6: (255, 111, 25, 255),   # railing
-    7: (0, 0, 0, 255),        # UNLABELLED
-    8: (226, 255, 25, 255),   # floor
-    9: (255, 197, 25, 255),   # forklift
-    10: (54, 255, 25, 255)    # stillage
-}
-
 DEBUG = True  # Set to True to enable visualization
-
-
 
 # Define the transforms with padding
 train_transform = transforms.Compose([
@@ -86,7 +69,7 @@ def main():
 
     # Model
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = HRNetV2Inspired(in_channels=3, num_classes=num_classes).to(device)
+    model = SimpleSegNet(num_classes=num_classes).to(device)
 
     # Optimizer
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
@@ -109,14 +92,18 @@ def main():
             for batch_idx, batch in enumerate(train_loader):
                 images = batch['image'].to(device)
                 masks = batch['mask'].to(device)
-                masks = masks.squeeze(1).long()  # Remove the channel dimension
+                masks = masks.squeeze(1).long()  # Remove the channel dimension if necessary
 
                 # Print input image stats
                 print(f"Input image stats - min: {images.min().item()}, max: {images.max().item()}")
                 
                 # Visualize input image and mask
                 if DEBUG and batch_idx == 0:
-                    visualize_image_and_mask(images[0].cpu(), masks[0].cpu(), title='Input Image and Mask')
+                # Assuming you have access to the dataset in this context
+                    sample_index = 0  # Change this index if you want to visualize a different sample from the dataset
+    
+                # Make sure to access the dataset correctly. For this example, you can use `train_loader.dataset`
+                    visualize_image_and_mask(train_loader.dataset, sample_index, title='Input Image and Mask')
 
                 # Zero the parameter gradients
                 optimizer.zero_grad()
