@@ -27,39 +27,14 @@ COLOR_MAP = {
 
 DEBUG = True  # Set to True to enable visualization
 
-def pad_image(image, target_size):
-    orig_width, orig_height = image.size
-    aspect_ratio = orig_width / orig_height
 
-    if orig_width > orig_height:
-        new_width = target_size[0]
-        new_height = int(target_size[0] / aspect_ratio)
-    else:
-        new_height = target_size[1]
-        new_width = int(target_size[1] * aspect_ratio)
-
-    image_resized = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
-    new_image = Image.new('RGB', target_size, (0, 0, 0))
-    paste_x = (target_size[0] - new_width) // 2
-    paste_y = (target_size[1] - new_height) // 2
-    new_image.paste(image_resized, (paste_x, paste_y))
-
-    return new_image
-
-def pad_image_train(image):
-    return pad_image(image, (256, 256))
-
-def pad_image_val(image):
-    return pad_image(image, (256, 256))
 
 # Define the transforms with padding
 train_transform = transforms.Compose([
-    transforms.Lambda(pad_image_train),
     transforms.ToTensor(),
 ])
 
 val_transform = transforms.Compose([
-    transforms.Lambda(pad_image_val),
     transforms.ToTensor(),
 ])
 

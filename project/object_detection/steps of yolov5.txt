@@ -1,0 +1,12 @@
+# Clone YOLOv5 repository
+git clone https://github.com/ultralytics/yolov5.git
+cd yolov5
+
+# Install dependencies
+pip install -r requirements.txt
+
+python train.py --img-size 640 --batch-size 16 --epochs 50 --data dataset.yaml --weights yolov5m.pt --cache
+
+#the upper didnt work due to gpu restrictions
+
+python train.py --img-size 416 --batch-size 8 --epochs 50 --data dataset.yaml --weights yolov5s.pt --cache

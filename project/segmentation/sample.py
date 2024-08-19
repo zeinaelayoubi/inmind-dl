@@ -83,10 +83,12 @@ class SegmentationDataset(Dataset):
 # Example usage
 if __name__ == "__main__":
     transform = transforms.Compose([
+        #transforms.Resize((256, 256)),  # Resize images
         transforms.ToTensor(),  # Convert images to tensor
     ])
 
     target_transform = transforms.Compose([
+        #transforms.Resize((256, 256)),  # Resize masks
         transforms.ToTensor(),  # Convert masks to tensor without normalization
         transforms.Lambda(lambda x: x.long())  # Ensure mask values are integers (class indices)
     ])
@@ -114,14 +116,14 @@ if __name__ == "__main__":
         
         # Convert mask to a numpy array for visualization
         mask_np = np.array(mask_pil)
-        
+
         # Print mask information
         print(f"Mask unique values: {np.unique(mask_np)}")
 
         # Load and verify the mask image directly
         mask_image = Image.open(os.path.join(dataset.mask_dir, dataset.mask_files[sample_index]))
         mask_array = np.array(mask_image)
-        #print("mask array",mask_array)
+
         # Print unique RGBA values
         unique_rgba = np.unique(mask_array.reshape(-1, mask_array.shape[2]), axis=0)
         print("Unique RGBA values in mask image:")
@@ -134,9 +136,8 @@ if __name__ == "__main__":
         axes[0].set_title('Image')
         axes[0].axis('off')
         
-        
-        axes[1].imshow(mask_array)  # Directly show the original mask with RGBA
-        axes[1].set_title('Original Mask')
+        axes[1].imshow(mask_np, cmap=custom_cmap)  # Use custom colormap for mask
+        axes[1].set_title('Mask')
         axes[1].axis('off')
         
         # Set aspect ratio to 'equal' to avoid squeezing

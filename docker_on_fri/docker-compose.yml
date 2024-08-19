@@ -1,16 +1,16 @@
 services:
   model1:
     build:
-      context: .
+      context: . #building here
       dockerfile: model.Dockerfile
     ports:
       - "8001:8000"
     environment:
-      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_HOST=rabbitmq # rabbitmq is the name of the container
     depends_on:
       - rabbitmq
     volumes:
-      - ./model1:/app
+      - ./model1:/app #if i change in the model , bseer fi changes bel container
     healthcheck:
       test: ["CMD", "curl", "-f", "http://model1:8000/health"]
       interval: 30s
@@ -44,8 +44,8 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - "15672:15672"  # Management UI
-      - "5672:5672"    # Default RabbitMQ port
+      - "15672:15672"  # Management UI , local : port lal management yaane local fik tghayri aade, hayala port not used 
+      - "5672:5672"    # Default RabbitMQ port nafs l shi , local: 
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
       interval: 30s
