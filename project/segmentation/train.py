@@ -14,10 +14,12 @@ DEBUG = True  # Set to True to enable visualization
 
 # Define the transforms with padding
 train_transform = transforms.Compose([
+    #transforms.Resize([256,256]),
     transforms.ToTensor(),
 ])
 
 val_transform = transforms.Compose([
+    #transforms.Resize([256,256]),
     transforms.ToTensor(),
 ])
 
@@ -99,10 +101,7 @@ def main():
                 
                 # Visualize input image and mask
                 if DEBUG and batch_idx == 0:
-                # Assuming you have access to the dataset in this context
-                    sample_index = 0  # Change this index if you want to visualize a different sample from the dataset
-    
-                # Make sure to access the dataset correctly. For this example, you can use `train_loader.dataset`
+                    sample_index = 0  # You may need to adjust this index to visualize different samples
                     visualize_image_and_mask(train_loader.dataset, sample_index, title='Input Image and Mask')
 
                 # Zero the parameter gradients
@@ -119,7 +118,12 @@ def main():
                 # Visualize output mask
                 if DEBUG and batch_idx == 0:
                     pred_mask = torch.argmax(outputs[0], dim=0).cpu()
-                    visualize_image_and_mask(images[0].cpu(), pred_mask, title='Predicted Mask')
+                    # Save predicted mask to visualize later
+                    pred_mask_pil = transforms.ToPILImage()(pred_mask)
+                    pred_mask_pil.save('predicted_mask.png')
+                    
+                    # Load and visualize predicted mask using the dataset method
+                    #visualize_image_and_mask(train_loader.dataset, sample_index, title='Predicted Mask')
 
                 # Backward pass and optimize with scaler
                 scaler.scale(loss).backward()

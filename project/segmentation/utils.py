@@ -88,6 +88,7 @@ def visualize_image_and_mask(dataset, index, title=''):
     """
     Visualize image and mask from the dataset at a specific index side-by-side for debugging purposes.
     """
+    
     if index >= len(dataset):
         print("Index is out of range.")
         return

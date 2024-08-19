@@ -1,88 +1,66 @@
-import os
-import torch
-from torchvision import transforms
 from PIL import Image
+from torchvision import transforms
 import numpy as np
-import matplotlib.pyplot as plt
-from model import HRNetV2Inspired
+import torch
+from model import SimpleSegNet
 
-# Define the color map
+# Define the color map for visualization
 COLOR_MAP = {
-    (0, 0, 0, 0): 0,          # BACKGROUND
-    (25, 255, 82, 255): 1,    # iwhub
-    (25, 82, 255, 255): 2,    # dolly
-    (255, 25, 197, 255): 3,   # pallet
-    (140, 25, 255, 255): 4,   # crate
-    (140, 255, 25, 255): 5,   # rack
-    (255, 111, 25, 255): 6,   # railing
-    (0, 0, 0, 255): 7,        # UNLABELLED
-    (226, 255, 25, 255): 8,   # floor
-    (255, 197, 25, 255): 9,   # forklift
-    (54, 255, 25, 255): 10    # stillage
+    0: (0, 0, 0, 0),          # BACKGROUND
+    1: (25, 255, 82, 255),    # iwhub
+    2: (25, 82, 255, 255),    # dolly
+    3: (255, 25, 197, 255),   # pallet
+    4: (140, 25, 255, 255),   # crate
+    5: (140, 255, 25, 255),   # rack
+    6: (255, 111, 25, 255),   # railing
+    7: (0, 0, 0, 255),        # UNLABELLED
+    8: (226, 255, 25, 255),   # floor
+    9: (255, 197, 25, 255),   # forklift
+    10: (54, 255, 25, 255)    # stillage
 }
 
-def load_model(checkpoint_path, device='cpu'):
-    model = HRNetV2Inspired(in_channels=3, num_classes=len(COLOR_MAP))  # Adjust num_classes
-    model.load_state_dict(torch.load(checkpoint_path, map_location=device)['state_dict'])
-    model.to(device)
-    model.eval()
-    return model
+def colorize_mask(mask, color_map):
+    """Apply the color map to the mask."""
+    color_mask = np.zeros((mask.shape[0], mask.shape[1], 3), dtype=np.uint8)
+    for class_idx, color in color_map.items():
+        color_mask[mask == class_idx] = color[:3]
+    return color_mask
 
-def preprocess_image(image_path, transform):
+# Load the model
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+model = SimpleSegNet(num_classes=11).to(device)
+checkpoint = torch.load('/content/your-repo/checkpoint.pth.tar')
+model.load_state_dict(checkpoint['state_dict'])
+model.eval()
+
+# Define the transformation
+transform = transforms.Compose([
+    transforms.ToTensor(),
+])
+
+def infer_image(image_path):
     image = Image.open(image_path).convert('RGB')
-    image = transform(image)
-    image = image.unsqueeze(0)  # Add batch dimension
-    return image
+    image = transform(image).unsqueeze(0).to(device)  # Add batch dimension and move to device
 
-def postprocess_output(output, color_map):
-    output = torch.argmax(output.squeeze(0), dim=0).byte().cpu().numpy()
-    
-    # Create an image with the same size as the output
-    color_output = np.zeros((output.shape[0], output.shape[1], 3), dtype=np.uint8)
-    
-    # Reverse the color map for easy lookup
-    reverse_color_map = {v: k for k, v in color_map.items()}
-    
-    # Map class indices to colors
-    for class_index, color in reverse_color_map.items():
-        color_output[output == class_index] = color[:3]  # Use RGB only
-    
-    return color_output
-
-def main():
-    # Configuration
-    image_path = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\semantic_segmentation\train\images\rgb_0956.png'  # Path to the input image
-    checkpoint_path = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\segmentation\checkpoint.pth.tar'  # Path to the saved model checkpoint
-    output_path = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\segmentation'  # Path to save the segmented output
-
-    # Device configuration
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-    # Model
-    model = load_model(checkpoint_path, device=device)
-
-    # Transforms
-    transform = transforms.Compose([
-        transforms.Resize((256, 256)),
-        transforms.ToTensor(),
-    ])
-
-    # Load and preprocess image
-    image = preprocess_image(image_path, transform)
-    image = image.to(device)
-
-    # Make prediction
     with torch.no_grad():
         output = model(image)
+        pred_mask = torch.argmax(output.squeeze(0), dim=0).cpu().numpy()
 
-    # Post-process output
-    segmented_image = postprocess_output(output, COLOR_MAP)
+    return pred_mask
 
-    # Save or display output
-    plt.imshow(segmented_image)
-    plt.axis('off')
-    plt.savefig(output_path, bbox_inches='tight', pad_inches=0)
-    plt.show()
+# Example usage
+image_path = '/content/your-repo/path_to_your_image.jpg'
+predicted_mask = infer_image(image_path)
 
-if __name__ == "__main__":
-    main()
+# Apply color map and save the result
+colorized_mask = colorize_mask(predicted_mask, COLOR_MAP)
+colorized_mask_image = Image.fromarray(colorized_mask)
+colorized_mask_image.save('/content/your-repo/predicted_mask.png')
+
+# Visualize the result
+import matplotlib.pyplot as plt
+plt.figure(figsize=(10, 10))
+plt.imshow(colorized_mask)
+plt.title('Predicted Mask')
+plt.axis('off')
+plt.show()
