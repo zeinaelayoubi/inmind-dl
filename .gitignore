@@ -6,11 +6,8 @@ Unet/train/
 Unet/train_masks/
 Unet/train_val/
 Unet/train_masks_val/
-project/dataset/object_detection/
-project/dataset/semantic_segmentation/labels/
-project/dataset/semantic_segmentation/train/temp_images/
-project/dataset/semantic_segmentation/train/temp_masks/
-project/dataset/metadata.txt
+
+project/dataset/
 mlruns/
 # Python bytecode
 __pycache__/
