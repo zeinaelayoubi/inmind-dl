@@ -52,11 +52,11 @@ def visualize_saved_predictions(folder='saved_images_epoch_1'):
 
 def main():
     # Configuration
-    train_image_dir = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\semantic_segmentation\train\images'
-    train_mask_dir = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\semantic_segmentation\train\masks'
-    val_image_dir = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\semantic_segmentation\val\images'
-    val_mask_dir = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\semantic_segmentation\val\masks'
-    batch_size = 2
+    train_image_dir = r'/content/inmind-dl/project/segmentation/dataset/semantic_segmentation/train/images'
+    train_mask_dir = r'/content/inmind-dl/project/segmentation/dataset/semantic_segmentation/train/masks'
+    val_image_dir = r'/content/inmind-dl/project/segmentation/dataset/semantic_segmentation/val/images'
+    val_mask_dir = r'/content/inmind-dl/project/segmentation/dataset/semantic_segmentation/val/images'
+    batch_size=4
     num_workers = 2
     pin_memory = False
     num_classes = 11
