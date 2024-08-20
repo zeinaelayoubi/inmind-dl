@@ -13,3 +13,8 @@ print(torch.cuda.get_device_name(0))
 print(torch.cuda.current_device())
 import torch
 torch.cuda.empty_cache()
+ 
+import sys
+print(sys.version)
+
+ 

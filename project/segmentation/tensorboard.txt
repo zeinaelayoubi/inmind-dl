@@ -1,0 +1,4 @@
+You can visualize the training and validation metrics using TensorBoard by running tensorboard
+ --logdir=runs in your terminal and opening
+  http://localhost:6006 in your browser.
+  

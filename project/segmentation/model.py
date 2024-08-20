@@ -36,37 +36,37 @@ class SimpleSegNet(nn.Module):
         )
     
     def forward(self, x):
-        print("Input shape:", x.shape)
+        #print("Input shape:", x.shape)
 
         # Encoder
         enc1 = self.enc1(x)
-        print("After enc1 (64 channels):", enc1.shape)
+        #print("After enc1 (64 channels):", enc1.shape)
 
         enc2 = self.enc2(enc1)
-        print("After enc2 (128 channels):", enc2.shape)
+        #print("After enc2 (128 channels):", enc2.shape)
 
         enc3 = self.enc3(enc2)
-        print("After enc3 (256 channels):", enc3.shape)
+        #print("After enc3 (256 channels):", enc3.shape)
 
-        enc4 = self.enc4(enc3)
-        print("After enc4 (512 channels):", enc4.shape)
+        #enc4 = self.enc4(enc3)
+        #print("After enc4 (512 channels):", enc4.shape)
 
         # Decoder
-        dec4 = self.dec4(enc4)
-        print("After dec4 (256 channels):", dec4.shape)
+        #dec4 = self.dec4(enc4)
+        #print("After dec4 (256 channels):", dec4.shape)
 
-        dec3 = self.dec3(dec4)
-        print("After dec3 (128 channels):", dec3.shape)
+        dec3 = self.dec3(enc3)
+        #print("After dec3 (128 channels):", dec3.shape)
 
         dec2 = self.dec2(dec3)
-        print("After dec2 (64 channels):", dec2.shape)
+        #print("After dec2 (64 channels):", dec2.shape)
 
         dec1 = self.dec1(dec2)
-        print("After dec1 (64 channels):", dec1.shape)
+        #print("After dec1 (64 channels):", dec1.shape)
 
         # Final layer
         output = self.final(dec1)
-        print("Final output shape:", output.shape)
+        #print("Final output shape:", output.shape)
 
         return output
 

@@ -61,8 +61,7 @@ def save_checkpoint(state, filename='my_checkpoint.pth.tar'):
 def load_checkpoint(checkpoint, model):
     """Load the model checkpoint."""
     model.load_state_dict(checkpoint['state_dict'])
-    # Uncomment the following if you are using an optimizer
-    # optimizer.load_state_dict(checkpoint['optimizer'])
+    
 
 def check_accuracy(loader, model, device='cuda'):
     """
@@ -82,7 +81,8 @@ def check_accuracy(loader, model, device='cuda'):
             num_samples += torch.numel(preds)
 
     accuracy = num_correct / num_samples
-    print(f'Accuracy: {accuracy:.4f}') 
+    print(f'Accuracy: {accuracy:.4f}')
+    return accuracy 
     
 def visualize_image_and_mask(dataset, index, title=''):
     """
