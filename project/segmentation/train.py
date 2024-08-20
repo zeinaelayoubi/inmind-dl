@@ -52,10 +52,10 @@ def visualize_saved_predictions(folder='saved_images_epoch_1'):
 
 def main():
     # Configuration
-    train_image_dir = r'/content/inmind-dl/project/segmentation/dataset/semantic_segmentation/train/images'
-    train_mask_dir = r'/content/inmind-dl/project/segmentation/dataset/semantic_segmentation/train/masks'
-    val_image_dir = r'/content/inmind-dl/project/segmentation/dataset/semantic_segmentation/val/images'
-    val_mask_dir = r'/content/inmind-dl/project/segmentation/dataset/semantic_segmentation/val/images'
+    train_image_dir = r'project/dataset/semantic_segmentation/train/images'
+    train_mask_dir = r'project/segmentation/dataset/semantic_segmentation/train/masks'
+    val_image_dir = r'project/segmentation/dataset/semantic_segmentation/val/images'
+    val_mask_dir = r'project/segmentation/dataset/semantic_segmentation/val/images'
     batch_size=4
     num_workers = 2
     pin_memory = False
