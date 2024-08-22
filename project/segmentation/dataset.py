@@ -2,9 +2,7 @@ import os
 import numpy as np
 import torch
 from PIL import Image
-import matplotlib.pyplot as plt
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
+from torch.utils.data import Dataset
 import matplotlib.colors as mcolors
 
 # Define the RGBA to class index mapping
@@ -22,15 +20,12 @@ COLOR_MAP = {
     10: (54, 255, 25, 255)    # stillage
 }
 
-# Function to create a custom colormap from the COLOR_MAP
 def create_custom_colormap(color_map):
-    """Create a custom colormap from the given color map."""
     colors = [color_map[i] for i in sorted(color_map.keys())]
     colors = [(r/255, g/255, b/255) for (r, g, b, a) in colors]
     cmap = mcolors.ListedColormap(colors)
     return cmap
 
-# Create a custom colormap
 custom_cmap = create_custom_colormap(COLOR_MAP)
 
 class SegmentationDataset(Dataset):
@@ -39,8 +34,7 @@ class SegmentationDataset(Dataset):
         self.mask_dir = mask_dir
         self.transform = transform
         self.target_transform = target_transform
-        
-        # Collect and sort filenames
+
         self.image_files = sorted([f for f in os.listdir(image_dir) if f.endswith('.png') and f.startswith('rgb_')])
         self.mask_files = sorted([f for f in os.listdir(mask_dir) if f.endswith('.png') and f.startswith('semantic_segmentation_')])
 
@@ -57,95 +51,22 @@ class SegmentationDataset(Dataset):
         image_path = os.path.join(self.image_dir, image_file)
         mask_path = os.path.join(self.mask_dir, mask_file)
 
-        # Load image and mask
         image = Image.open(image_path).convert('RGB')
-        mask = Image.open(mask_path).convert('RGBA')  # Load as RGBA
+        mask = Image.open(mask_path).convert('RGBA')
 
-        # Convert RGBA mask to single-channel mask
         mask = np.array(mask)
         class_mask = np.zeros((mask.shape[0], mask.shape[1]), dtype=np.uint8)
-        
+
         for class_index, rgba in COLOR_MAP.items():
             mask_class = np.all(mask[:, :, :4] == rgba, axis=-1)
             class_mask[mask_class] = class_index
-        
+
         mask = Image.fromarray(class_mask, mode='L')
 
-        # Transform images and masks if provided
         if self.transform:
             image = self.transform(image)
         
         if self.target_transform:
-            mask = self.target_transform(mask)  # Apply target_transform to mask
+            mask = self.target_transform(mask)
 
         return {'image': image, 'mask': mask}
-
-# Example usage
-if __name__ == "__main__":
-    transform = transforms.Compose([
-        transforms.ToTensor(),  # Convert images to tensor
-    ])
-
-    target_transform = transforms.Compose([
-        transforms.ToTensor(),  # Convert masks to tensor without normalization
-        transforms.Lambda(lambda x: x.long())  # Ensure mask values are integers (class indices)
-    ])
-
-    dataset = SegmentationDataset(
-        image_dir=r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\semantic_segmentation\train\images',
-        mask_dir=r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\semantic_segmentation\train\masks',
-        transform=transform,
-        target_transform=target_transform
-    )
-
-    dataloader = DataLoader(dataset, batch_size=16, shuffle=True)
-
-
-
-    # Index of the sample to visualize
-    sample_index = 24  # Change this index to view different samples
-
-    if sample_index < len(dataset):
-        sample = dataset[sample_index]
-        image = sample['image']
-        mask = sample['mask']
-
-        # Convert tensors to PIL Images for visualization
-        image_pil = transforms.ToPILImage()(image.cpu())
-        mask_pil = transforms.ToPILImage()(mask.cpu().to(dtype=torch.uint8))  # Convert mask to uint8
-        
-        # Convert mask to a numpy array for visualization
-        mask_np = np.array(mask_pil)
-        
-        # Print mask information
-        print(f"Mask unique values: {np.unique(mask_np)}")
-
-        # Load and verify the mask image directly
-        mask_image = Image.open(os.path.join(dataset.mask_dir, dataset.mask_files[sample_index]))
-        mask_array = np.array(mask_image)
-        #print("mask array",mask_array)
-        # Print unique RGBA values
-        unique_rgba = np.unique(mask_array.reshape(-1, mask_array.shape[2]), axis=0)
-        print("Unique RGBA values in mask image:")
-        for rgba in unique_rgba:
-            print(rgba)
-
-        # Plot the image and mask with the custom colormap
-        fig, axes = plt.subplots(1, 2, figsize=(18, 7))  # Added an extra subplot for direct mask view
-        axes[0].imshow(image_pil)
-        axes[0].set_title('Image')
-        axes[0].axis('off')
-        
-        
-        axes[1].imshow(mask_array)  # Directly show the original mask with RGBA
-        axes[1].set_title('Original Mask')
-        axes[1].axis('off')
-        
-        # Set aspect ratio to 'equal' to avoid squeezing
-        for ax in axes:
-            ax.set_aspect('equal')
-
-        plt.tight_layout()
-        plt.show()
-    else:
-        print("Sample index is out of range.")

@@ -18,6 +18,6 @@ dataset = SegmentationDataset(
 # Define the index of the sample to visualize
 sample_index = 24  # Change this index to view different samples
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 # Visualize the image and mask at the specified index
 visualize_image_and_mask(dataset, sample_index, title='Sample Visualization')

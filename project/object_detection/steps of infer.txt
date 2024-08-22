@@ -1,4 +1,23 @@
-
-python detect.py --weights "C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\object_detection\yolov5\runs\train\exp2\weights\best.pt" --img-size 416 --conf-thres 0.001 --iou-thres 0.5 --source "C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\object_detection\yolov5_format\val\images\rgb_0059.png" --device 0
+####to infer
 
 python detect.py --weights "C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\object_detection\yolov5\runs\train\exp2\weights\best.pt" --img-size 416 --conf-thres 0.3 --iou-thres 0.5 --source "C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\object_detection\yolov5_format\val\images\rgb_0136.png" --device 0
+
+
+
+################
+in yolov5 directory i ran this command to convert the model to ONNX format using a built in function in yolov5:
+
+python export.py --weights runs\train\exp3\weights\best.pt --img 416 --batch 1 --include onnx
+
+
+################
+infer time yolov5
+Speed: 8.1ms pre-process, 137.4ms inference, 83.2ms NMS per image at shape (1, 3, 416, 416)
+Results saved to runs\detect\exp8
+
+
+using ONNX
+
+Inference Time: 0.1294 seconds
+
+onnx is faster.

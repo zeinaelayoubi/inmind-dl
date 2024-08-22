@@ -4,23 +4,20 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from model import SimpleSegNet
-from utils import get_loaders, save_checkpoint, load_checkpoint, check_accuracy, save_predictions_as_imgs, visualize_image_and_mask
-from torch.cuda.amp import GradScaler, autocast
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-from PIL import Image
+from utils import get_loaders, save_checkpoint, load_checkpoint, check_accuracy, save_predictions_as_imgs
 from torch.utils.tensorboard import SummaryWriter
+from PIL import Image
+import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 DEBUG = True  # Set to True to enable visualization
 
-# Define the transforms with padding
+# Define the transforms
 train_transform = transforms.Compose([
-    #transforms.Resize([256,256]),
     transforms.ToTensor(),
 ])
 
 val_transform = transforms.Compose([
-    #transforms.Resize([256,256]),
     transforms.ToTensor(),
 ])
 
@@ -32,19 +29,12 @@ def visualize_saved_predictions(folder='saved_images_epoch_1'):
         print(f"Folder {folder} does not exist.")
         return
 
-    # Get list of saved images
     filenames = [f for f in os.listdir(folder) if f.endswith('.png')]
-
-    # Sort filenames if necessary
     filenames.sort()
 
     for filename in filenames:
         img_path = os.path.join(folder, filename)
-        
-        # Load the image
         img = Image.open(img_path)
-        
-        # Display the image
         plt.figure(figsize=(10, 10))
         plt.imshow(img)
         plt.title(f'Prediction: {filename}')
@@ -57,7 +47,7 @@ def main():
     train_mask_dir = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\semantic_segmentation\train\masks'
     val_image_dir = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\semantic_segmentation\val\images'
     val_mask_dir = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\semantic_segmentation\val\masks'
-    batch_size = 2
+    batch_size = 4
     num_workers = 2
     pin_memory = False
     num_classes = 11
@@ -71,7 +61,7 @@ def main():
     )
 
     # Model
-    device = 'cpu'  # Force to use CPU
+    device = torch.device('cpu')  # Force to use CPU
     model = SimpleSegNet(num_classes=num_classes).to(device)
 
     # Optimizer
@@ -83,88 +73,61 @@ def main():
     # Initialize TensorBoard SummaryWriter
     writer = SummaryWriter('runs/semantic_segmentation_experiment')
 
+    # Initialize best validation accuracy
+    best_val_accuracy = 0.0
+
     # Training Loop
-    num_epochs = 2
+    num_epochs = 4
 
     for epoch in range(num_epochs):
         model.train()
         running_loss = 0.0
 
-        # Create a tqdm progress bar for the training loop
-        with tqdm(total=len(train_loader), desc=f'Epoch {epoch + 1}/{num_epochs}', unit='batch') as pbar:
-            for batch_idx, batch in enumerate(train_loader):
-                images = batch['image'].to(device)
-                masks = batch['mask'].to(device)
-                masks = masks.squeeze(1).long()  # Remove the channel dimension if necessary
+        # Train the model
+        for batch in tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs}", unit="batch"):
+            images, masks = batch['image'].to(device), batch['mask'].to(device)
 
-                # Print input image stats
-                #print(f"Input image stats - min: {images.min().item()}, max: {images.max().item()}")
-                
-                # Visualize input image and mask
-                if DEBUG and batch_idx == 0:
-                    sample_index = 0  # You may need to adjust this index to visualize different samples
-                    #visualize_image_and_mask(train_loader.dataset, sample_index, title='Input Image and Mask')
+            optimizer.zero_grad()
+            outputs = model(images)
 
-                # Zero the parameter gradients
-                optimizer.zero_grad()
+            # Ensure outputs and targets are the correct shapes
+            if outputs.dim() != 4 or masks.dim() != 4:
+                raise ValueError(f"Outputs shape: {outputs.shape}, Masks shape: {masks.shape}")
 
-                # Forward pass
-                outputs = model(images)
-                loss = criterion(outputs, masks)
+            # Remove the extra channel dimension from masks if present
+            if masks.shape[1] == 1:  # If masks have an extra channel dimension
+                masks = masks.squeeze(1)  # Remove channel dimension
 
-                # Print output stats
-                #print(f"Output stats - min: {outputs.min().item()}, max: {outputs.max().item()}")
+            # Ensure masks are in the right format
+            if masks.dim() == 3:  # For mask: [batch_size, height, width]
+                masks = masks.long()  # Ensure masks are long type for CrossEntropyLoss
 
-                # Visualize output mask
-                if DEBUG and batch_idx == 0:
-                    pred_mask = torch.argmax(outputs[0], dim=0).cpu()
+            loss = criterion(outputs, masks)
+            loss.backward()
+            optimizer.step()
 
-                    # Convert the mask to uint8
-                    pred_mask = pred_mask.to(torch.uint8)
+            running_loss += loss.item()
 
-                    # Convert the mask to PIL image
-                    pred_mask_pil = transforms.ToPILImage()(pred_mask)
+        epoch_loss = running_loss / len(train_loader)
+        print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {epoch_loss:.4f}")
 
-                    # Save the predicted mask
-                    #pred_mask_pil.save('predicted_mask.png')
-                    
-                    # Load and visualize predicted mask using the dataset method
-                    #visualize_image_and_mask(train_loader.dataset, sample_index, title='Predicted Mask')
+        writer.add_scalar('Loss/train', epoch_loss, epoch)
 
-                # Backward pass and optimize
-                loss.backward()
-                optimizer.step()
+        # Check accuracy
+        val_accuracy = check_accuracy(val_loader, model, device)
+        writer.add_scalar('Accuracy/val', val_accuracy, epoch)
 
-                running_loss += loss.item() * images.size(0)
+        # Save best model
+        if val_accuracy > best_val_accuracy:
+            best_val_accuracy = val_accuracy
+            save_checkpoint(model, optimizer, epoch, best_val_accuracy, 'best_model_weights.pt')
 
-                # Update progress bar
-                pbar.set_postfix(loss=loss.item())
-                pbar.update(1)
+        # Save predictions for visualization
+        if DEBUG:
+            save_predictions_as_imgs(val_loader, model, folder='saved_images_epoch_{}'.format(epoch + 1), device=device)
+            #visualize_saved_predictions(folder='saved_images_epoch_{}'.format(epoch + 1))
 
-        epoch_loss = running_loss / len(train_loader.dataset)
-        print(f'Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}')
-        # Log training loss to TensorBoard
-        writer.add_scalar('Loss/train', epoch_loss, epoch + 1)
-        # Validation
-        print("Evaluating on validation set...")
-        accuracy = check_accuracy(val_loader, model, device=device)
-        writer.add_scalar('Accuracy/val', accuracy, epoch + 1)
-        # Save checkpoint
-        checkpoint = {
-            'state_dict': model.state_dict(),
-            'optimizer': optimizer.state_dict(),
-        }
-        save_checkpoint(checkpoint, filename='checkpoint.pth.tar')
-
-        # Save predictions
-        prediction_folder = f'saved_images_epoch_{epoch + 1}'
-        save_predictions_as_imgs(val_loader, model, folder=prediction_folder, device=device)
-
-    # Close the TensorBoard writer
     writer.close()
-
-    # Visualize saved predictions
-    #visualize_saved_predictions(prediction_folder)
 
 if __name__ == "__main__":
     main()

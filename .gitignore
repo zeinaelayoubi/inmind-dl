@@ -1,3 +1,6 @@
+__pycache__/
+augmented/images/
+augmented/labels/
 data/images/
 data/labels/
 data/100examples.csv
@@ -6,16 +9,14 @@ Unet/train/
 Unet/train_masks/
 Unet/train_val/
 Unet/train_masks_val/
-
 project/dataset/
-mlruns/
-# Python bytecode
-__pycache__/
-*.pyc
+project/__pycache__/
+project/segmentation/runs/
+project/segmentation/saved_images_epoch_1/
+project/segmentation/saved_images_epoch_2/
+project/segmentation/saved_images_epoch_3/
+project/segmentation/saved_images_epoch_4/
 
-# Virtual environment
-venv/
-.env/
 
 # Log files
 *.log
