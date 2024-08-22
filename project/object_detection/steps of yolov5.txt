@@ -7,6 +7,12 @@ pip install -r requirements.txt
 
 python train.py --img-size 640 --batch-size 16 --epochs 50 --data dataset.yaml --weights yolov5m.pt --cache
 
-#the upper didnt work due to gpu restrictions
+#the upper didnt work due to gpu restrictions, this was the reason why image size and batch size were decreased.
 
 python train.py --img-size 416 --batch-size 8 --epochs 50 --data dataset.yaml --weights yolov5s.pt --cache
+
+
+#now to further improve the model, i used finetuning that takes the best.pt from the previous model and does another 25 epochs 
+
+python train.py --img-size 416 --batch-size 8 --epochs 25 --data dataset.yaml --weights runs/train/exp2/weights/best.pt --cache
+
