@@ -1,0 +1,1 @@
+tried to dockerize, errors in versions of python used.

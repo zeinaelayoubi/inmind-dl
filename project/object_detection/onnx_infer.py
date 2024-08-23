@@ -154,4 +154,4 @@ mean_iou = np.mean(iou_scores)
 
 # Print results
 print(f"Accuracy: {accuracy:.4f}")
-print(f"Mean IoU: {mean_iou:.4f}")
+
