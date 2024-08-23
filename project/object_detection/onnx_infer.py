@@ -58,7 +58,7 @@ class_colors = [
 ort_session = ort.InferenceSession(r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\object_detection\yolov5\runs\train\exp3\weights\best.onnx')
 
 # Load and preprocess the image
-image_path = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\object_detection\yolov5_format\val\images\rgb_0136.png'
+image_path = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\object_detection\yolov5_format\train\images\rgb_0000.png'
 image = Image.open(image_path).convert('RGB')  # Ensure image is in RGB mode
 image_np = np.array(image)
 img_resized = image.resize((416, 416))  # Resize image to YOLOv5 input size
@@ -117,7 +117,7 @@ plt.show()
 print(f"Inference Time: {inference_time:.4f} seconds")
 
 # Read ground truth labels from YOLO format file
-label_path = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\object_detection\yolov5_format\train\labels\rgb_0001.txt'
+label_path = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\object_detection\yolov5_format\train\labels\rgb_0000.txt'
 ground_truth_boxes = read_yolo_labels(label_path)
 
 # Convert ground truth from center-width-height to x1, y1, x2, y2
@@ -152,6 +152,5 @@ accuracy = correct_predictions / len(ground_truth_boxes)
 # Calculate mean IoU
 mean_iou = np.mean(iou_scores)
 
-# Print results
-print(f"Accuracy: {accuracy:.4f}")
+
 

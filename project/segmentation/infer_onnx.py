@@ -44,6 +44,6 @@ def inference(image_path, onnx_model_path):
     colored_mask_pil.show()
 
 # Example usage
-image_path = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\semantic_segmentation\val\images\rgb_0947.png'
+image_path = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\dataset\semantic_segmentation\train\temp_images\rgb_0018.png'
 onnx_model_path = r'C:\Users\Personal\OneDrive - Lebanese American University\inmind\Inmind_workspace\project\segmentation\seg_model.onnx'
 inference(image_path, onnx_model_path)
