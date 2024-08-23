@@ -17,7 +17,6 @@ project/segmentation/saved_images_epoch_2/
 project/segmentation/saved_images_epoch_3/
 project/segmentation/saved_images_epoch_4/
 
-
 # Log files
 *.log
 
@@ -39,3 +38,6 @@ config.yaml
 # IDE and editor specific files
 .vscode/
 .idea/
+
+# Include yolov5 folder explicitly in project/object_detection
+!project/object_detection/yolov5/
